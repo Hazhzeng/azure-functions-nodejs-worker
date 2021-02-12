@@ -7,7 +7,7 @@ import { toTypedData } from './converters';
 import { augmentTriggerMetadata } from './augmenters';
 import { systemError } from './utils/Logger';
 import { InternalException } from './utils/InternalException';
-import { Context } from './public/Interfaces';
+import { Context, FuncExtension } from './public/Interfaces';
 import LogCategory = rpc.RpcLog.RpcLogCategory;
 import LogLevel = rpc.RpcLog.Level;
 
@@ -215,12 +215,18 @@ export class WorkerChannel implements IWorkerChannel {
     let { context, inputs } = CreateContextAndInputs(info, msg, logCallback, resultCallback);
     let userFunction = this._functionLoader.getFunc(<string>msg.functionId);
 
-    userFunction = this.runInvocationRequestBefore(context, userFunction);
-
     // catch user errors from the same async context in the event loop and correlate with invocation
     // throws from asynchronous work (setTimeout, etc) are caught by 'unhandledException' and cannot be correlated with invocation
     try {
+        if (FuncExtension.RegisteredBeforeInvocation[userFunction.name]) {
+          FuncExtension.RegisteredBeforeInvocation[userFunction.name](context);
+        }
+
         let result = userFunction(context, ...inputs);
+
+        if (FuncExtension.RegisteredAfterInvocation[userFunction.name]) {
+          FuncExtension.RegisteredAfterInvocation[userFunction.name](context);
+        }
 
         if (result && isFunction(result.then)) {
         result.then(result => {

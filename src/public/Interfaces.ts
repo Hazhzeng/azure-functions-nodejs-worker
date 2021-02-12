@@ -1,19 +1,19 @@
 /**
- * Interface for your Azure Function code. This function must be exported (via module.exports or exports) 
- * and will execute when triggered. It is recommended that you declare this function as async, which 
+ * Interface for your Azure Function code. This function must be exported (via module.exports or exports)
+ * and will execute when triggered. It is recommended that you declare this function as async, which
  * implicitly returns a Promise.
  * @param context Context object passed to your function from the Azure Functions runtime.
- * @param {any[]} args Optional array of input and trigger binding data. These binding data are passed to the 
- * function in the same order that they are defined in function.json. Valid input types are string, HttpRequest, 
+ * @param {any[]} args Optional array of input and trigger binding data. These binding data are passed to the
+ * function in the same order that they are defined in function.json. Valid input types are string, HttpRequest,
  * and Buffer.
- * @returns Output bindings (optional). If you are returning a result from a Promise (or an async function), this 
+ * @returns Output bindings (optional). If you are returning a result from a Promise (or an async function), this
  * result will be passed to JSON.stringify unless it is a string, Buffer, ArrayBufferView, or number.
  */
 export type AzureFunction = ((context: Context, ...args: any[]) => Promise<any> | void);
 
 /**
- * The context object can be used for writing logs, reading data from bindings, setting outputs and using 
- * the context.done callback when your exported function is synchronous. A context object is passed 
+ * The context object can be used for writing logs, reading data from bindings, setting outputs and using
+ * the context.done callback when your exported function is synchronous. A context object is passed
  * to your function from the Azure Functions runtime on function invocation.
  */
 export interface Context {
@@ -26,7 +26,7 @@ export interface Context {
      */
     executionContext: ExecutionContext;
     /**
-     * Input and trigger binding data, as defined in function.json. Properties on this object are dynamically 
+     * Input and trigger binding data, as defined in function.json. Properties on this object are dynamically
      * generated and named based off of the "name" property in function.json.
      */
     bindings: { [key: string]: any };
@@ -43,15 +43,15 @@ export interface Context {
      */
     bindingDefinitions: BindingDefinition[];
     /**
-     * Allows you to write streaming function logs. Calling directly allows you to write streaming function logs 
-     * at the default trace level. 
+     * Allows you to write streaming function logs. Calling directly allows you to write streaming function logs
+     * at the default trace level.
      */
     log: Logger;
     /**
      * A callback function that signals to the runtime that your code has completed. If your function is synchronous,
-     * you must call context.done at the end of execution. If your function is asynchronous, you should not use this 
+     * you must call context.done at the end of execution. If your function is asynchronous, you should not use this
      * callback.
-     * 
+     *
      * @param err A user-defined error to pass back to the runtime. If present, your function execution will fail.
      * @param result An object containing output binding data. `result` will be passed to JSON.stringify unless it is
      *  a string, Buffer, ArrayBufferView, or number.
@@ -123,7 +123,7 @@ export interface Cookie {
     /** Specifies URL path that must exist in the requested URL */
     path?: string;
 
-    /** 
+    /**
      * NOTE: It is generally recommended that you use maxAge over expires.
      * Sets the cookie to expire at a specific date instead of when the client closes.
      * This can be a Javascript Date or Unix time in milliseconds.
@@ -150,7 +150,7 @@ export interface ExecutionContext {
     invocationId: string;
     /**
      * The name of the function that is being invoked. The name of your function is always the same as the
-     * name of the corresponding function.json's parent directory. 
+     * name of the corresponding function.json's parent directory.
      */
     functionName: string;
     /**
@@ -191,11 +191,11 @@ export interface BindingDefinition {
 }
 
 /**
- * Allows you to write streaming function logs. 
+ * Allows you to write streaming function logs.
  */
 export interface Logger {
     /**
-     * Writes streaming function logs at the default trace level. 
+     * Writes streaming function logs at the default trace level.
      */
     (...args: any[]): void;
     /**
@@ -214,4 +214,27 @@ export interface Logger {
      * Writes to verbose level logging.
      */
     verbose(...args: any[]): void;
+}
+
+export abstract class FuncExtension {
+    static RegisteredBeforeInvocation = {}
+    static RegisteredAfterInvocation = {}
+
+    abstract beforeInvocation(context: Context): void;
+
+    abstract afterInvocation(context: Context): void;
+
+    register(trigger_name: string): void {
+        if (this.beforeInvocation) {
+            FuncExtension.RegisteredBeforeInvocation[trigger_name] = (
+                this.beforeInvocation.bind(this)
+            );
+        }
+
+        if (this.afterInvocation) {
+            FuncExtension.RegisteredAfterInvocation[trigger_name] = (
+                this.afterInvocation.bind(this)
+            );
+        }
+    }
 }
