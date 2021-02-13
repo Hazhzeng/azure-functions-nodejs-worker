@@ -208,3 +208,10 @@ export interface Logger {
      */
     verbose(...args: any[]): void;
 }
+export declare abstract class FuncExtension {
+    static RegisteredBeforeInvocation: {};
+    static RegisteredAfterInvocation: {};
+    abstract beforeInvocation(context: Context): void;
+    abstract afterInvocation(context: Context): void;
+    register(trigger_name: string): void;
+}
