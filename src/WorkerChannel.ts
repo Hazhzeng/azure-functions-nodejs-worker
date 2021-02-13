@@ -82,7 +82,7 @@ export class WorkerChannel implements IWorkerChannel {
   }
 
   /**
-   * Captured logs or relevant details can use the logs property 
+   * Captured logs or relevant details can use the logs property
    * @param requestId gRPC message request id
    * @param msg gRPC message content
    */
@@ -108,7 +108,7 @@ export class WorkerChannel implements IWorkerChannel {
   }
 
   /**
-   * Host sends capabilities/init data to worker and requests the worker to initialize itself 
+   * Host sends capabilities/init data to worker and requests the worker to initialize itself
    * @param requestId gRPC message request id
    * @param msg gRPC message content
    */
@@ -185,7 +185,7 @@ export class WorkerChannel implements IWorkerChannel {
         invocationId: msg.invocationId,
         result: this.getStatus(err)
       }
-      
+
       try {
         if (result) {
           if (result.return) {
@@ -208,15 +208,15 @@ export class WorkerChannel implements IWorkerChannel {
         requestId: requestId,
         invocationResponse: response
       });
-      
+
       this.runInvocationRequestAfter(context);
     }
 
     let { context, inputs } = CreateContextAndInputs(info, msg, logCallback, resultCallback);
     let userFunction = this._functionLoader.getFunc(<string>msg.functionId);
-    
+
     userFunction = this.runInvocationRequestBefore(context, userFunction);
-    
+
     // catch user errors from the same async context in the event loop and correlate with invocation
     // throws from asynchronous work (setTimeout, etc) are caught by 'unhandledException' and cannot be correlated with invocation
     try {
@@ -237,14 +237,14 @@ export class WorkerChannel implements IWorkerChannel {
 
   /**
    * Worker sends the host information identifying itself
-   */ 
+   */
   public startStream(requestId: string, msg: rpc.StartStream): void {
     // Not yet implemented
   }
-  
+
   /**
    * Message is empty by design - Will add more fields in future if needed
-   */ 
+   */
   public workerHeartbeat(requestId: string, msg: rpc.WorkerHeartbeat): void {
     // Not yet implemented
   }
@@ -252,7 +252,7 @@ export class WorkerChannel implements IWorkerChannel {
   /**
    * Warning before killing the process after grace_period
    * Worker self terminates ..no response on this
-   */ 
+   */
   public workerTerminate(requestId: string, msg: rpc.WorkerTerminate): void {
     // Not yet implemented
   }
@@ -260,7 +260,7 @@ export class WorkerChannel implements IWorkerChannel {
   /**
    * When host sends a "WorkerStatusRequest," the worker needs to return the appropriate response.
    * The latency from request to response helps inform scale decisions.
-   */ 
+   */
   public workerStatusRequest(requestId: string, msg: rpc.WorkerStatusRequest): void {
     this._eventStream.write({
       requestId: requestId,
@@ -270,21 +270,21 @@ export class WorkerChannel implements IWorkerChannel {
 
   /**
    * Host notifies worker of file content change
-   */   
+   */
   public fileChangeEventRequest(requestId: string, msg: rpc.FileChangeEventRequest): void {
     // Not yet implemented
   }
 
   /**
    * Host requests worker to cancel invocation
-   */ 
+   */
   public invocationCancel(requestId: string, msg: rpc.InvocationCancel): void {
     // Not yet implemented
   }
-  
+
   /**
    * Environment variables from the current process
-   */ 
+   */
   public functionEnvironmentReloadRequest(requestId: string, msg: rpc.IFunctionEnvironmentReloadRequest): void {
     // Add environment variables from incoming
     let numVariables = (msg.environmentVariables && Object.keys(msg.environmentVariables).length) || 0;
