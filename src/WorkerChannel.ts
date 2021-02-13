@@ -218,14 +218,14 @@ export class WorkerChannel implements IWorkerChannel {
     // catch user errors from the same async context in the event loop and correlate with invocation
     // throws from asynchronous work (setTimeout, etc) are caught by 'unhandledException' and cannot be correlated with invocation
     try {
-        if (FuncExtension.RegisteredBeforeInvocation[userFunction.name]) {
-          FuncExtension.RegisteredBeforeInvocation[userFunction.name](context);
+        const functionName = context.executionContext.functionName;
+        if (FuncExtension.RegisteredBeforeInvocation[functionName]) {
+          FuncExtension.RegisteredBeforeInvocation[functionName](context);
         }
-
         let result = userFunction(context, ...inputs);
 
-        if (FuncExtension.RegisteredAfterInvocation[userFunction.name]) {
-          FuncExtension.RegisteredAfterInvocation[userFunction.name](context);
+        if (FuncExtension.RegisteredAfterInvocation[functionName]) {
+          FuncExtension.RegisteredAfterInvocation[functionName](context);
         }
 
         if (result && isFunction(result.then)) {
